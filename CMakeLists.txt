@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 3.26)
-project(testgame)
+cmake_minimum_required(VERSION 3.16)
+project(SnakeTest)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(testgame main.cpp)
-set(SFML_DIR "C:/Users/Admin/CLionProjects/lib/sfml/GCC 13.1.0 MinGW (SEH) - 64-bit/SFML-2.6.1/lib/cmake/SFML")
-find_package(SFML COMPONENTS graphics audio REQUIRED)
-target_link_libraries(testgame PRIVATE sfml-system sfml-window sfml-graphics sfml-audio)
+set(SFML_INCLUDE_DIR "/opt/homebrew/include")
+set(SFML_LIB_DIR "/opt/homebrew/lib")
+include_directories(${SFML_INCLUDE_DIR})
+add_executable(SnakeTest main.cpp)
+target_link_libraries(SnakeTest
+        ${SFML_LIB_DIR}/libsfml-graphics.dylib
+        ${SFML_LIB_DIR}/libsfml-window.dylib
+        ${SFML_LIB_DIR}/libsfml-system.dylib
+)
