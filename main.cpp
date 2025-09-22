@@ -4,29 +4,21 @@
 #include <SFML/System.hpp>
 using namespace std;
 
-sf::Vector2i direction(1, 0);
+constexpr int width = 40, height = 20, blockSize = 16;
+int x = width/2-1, y = height/2-1;
+int score = 0, fruitsEaten = 0;
+float moveDelay = 0.12f, minDelay = 0.05f;
+sf::Vector2i direction(1,0);
 sf::Clock gameClock;
-const int width = 40;
-const int height = 20;
-const int blockSize = 16;
-int x = width / 2 - 1;
-int y = height / 2 - 1;
-int fruitX = rand() % width;
-int fruitY = rand() % height;
-int fruitsEaten = 0;
-int score = 0;
-float moveDelay = 0.12f;
-const float minDelay = 0.05f;
 vector<sf::Vector2i> snake;
+sf::Vector2i fruit(rand()%width, rand()%height);
 
 void Setup() {
-    snake.clear();
-    x = width / 2 - 1;
-    y = height / 2 - 1;
-    snake.push_back(sf::Vector2i(x, y));
-    fruitX = rand() % width;
-    fruitY = rand() % height;
-    score = 0;
+    snake = {{x,y}};
+    direction = {1,0};
+    fruit = {rand()%width, rand()%height};
+    score = fruitsEaten = 0;
+    moveDelay = 0.12f;
 }
 
 void Draw(sf::RenderWindow &window) {
@@ -39,10 +31,10 @@ void Draw(sf::RenderWindow &window) {
         window.draw(snakeBlock);
     }
 
-    sf::RectangleShape fruit(sf::Vector2f(blockSize, blockSize));
-    fruit.setFillColor(sf::Color::Red);
-    fruit.setPosition(sf::Vector2f(fruitX * blockSize, fruitY * blockSize));
-    window.draw(fruit);
+    sf::RectangleShape fruitShape(sf::Vector2f(blockSize, blockSize));
+    fruitShape.setFillColor(sf::Color::Red);
+    fruitShape.setPosition(sf::Vector2f(fruit.x * blockSize, fruit.y * blockSize));
+    window.draw(fruitShape);
 
     window.display();
 }
@@ -109,11 +101,10 @@ void Logic(sf::RenderWindow &window) {
         }
     }
 
-    if (x == fruitX && y == fruitY) {
+    if (x == fruit.x && y == fruit.y) {
         score++;
         fruitsEaten++;
-        fruitX = rand() % width;
-        fruitY = rand() % height;
+        fruit = {rand() % width, rand() % height};
 
         if (fruitsEaten % 3 == 0 && moveDelay > minDelay) {
             moveDelay -= 0.005f;
