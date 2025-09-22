@@ -14,7 +14,7 @@ vector<sf::Vector2i> snake;
 sf::Vector2i fruit(rand()%width, rand()%height);
 
 void Setup(sf::RenderWindow &window) {
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(10);
     snake = {{x,y}};
     direction = {1,0};
     fruit = {rand()%width, rand()%height};
