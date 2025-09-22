@@ -4,94 +4,84 @@
 
 using namespace std;
 
-const int width = 40;
-const int height = 20;
-const int blockSize = 16;
-int x = width / 2 - 1;
-int y = height / 2 - 1;
-int fruitX = rand() % width;
-int fruitY = rand() % height;
-int score = 0;
-sf::Vector2i direction(1, 0);
-vector<sf::Vector2i> snake; // Vector to store snake blocks
+const int width = 40, height = 20, blockSize = 16;
+int x = width/2-1, y = height/2-1;
+int score = 0, fruitsEaten = 0;
+float moveDelay = 0.12f, minDelay = 0.05f;
+sf::Vector2i direction(1,0);
+sf::Clock gameClock;
+vector<sf::Vector2i> snake;
+sf::Vector2i fruit(rand()%width, rand()%height);
 
 void Setup(sf::RenderWindow &window) {
-    window.setFramerateLimit(10);
-    snake.clear();
-    x = width / 2 - 1;
-    y = height / 2 - 1;
-    snake.push_back(sf::Vector2i(x, y));
-    fruitX = rand() % width;
-    fruitY = rand() % height;
-    score = 0;
+    window.setFramerateLimit(60);
+    snake = {{x,y}};
+    direction = {1,0};
+    fruit = {rand()%width, rand()%height};
+    score = fruitsEaten = 0;
+    moveDelay = 0.12f;
 }
 
 void Draw(sf::RenderWindow &window) {
     window.clear(sf::Color::Black);
 
-    // Draw the snake
-    for (const auto& block : snake) {
-        sf::RectangleShape snakeBlock(sf::Vector2f(blockSize, blockSize));
-        snakeBlock.setFillColor(sf::Color::Green);
-        snakeBlock.setPosition(block.x * blockSize, block.y * blockSize);
-        window.draw(snakeBlock);
+    for (auto &b : snake) {
+        sf::RectangleShape block(sf::Vector2f(blockSize, blockSize));
+        block.setPosition(b.x*blockSize, b.y*blockSize);
+        block.setFillColor(sf::Color::Green);
+        window.draw(block);
     }
 
-    // Draw the fruit
-    sf::RectangleShape fruit(sf::Vector2f(blockSize, blockSize));
-    fruit.setFillColor(sf::Color::Red);
-    fruit.setPosition(fruitX * blockSize, fruitY * blockSize);
-    window.draw(fruit);
+    sf::RectangleShape f(sf::Vector2f(blockSize, blockSize));
+    f.setPosition(fruit.x*blockSize, fruit.y*blockSize);
+    f.setFillColor(sf::Color::Red);
+    window.draw(f);
 
     window.display();
 }
 
 void Input(sf::RenderWindow &window) {
-    sf::Event event;
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-            window.close();
-        else if (event.type == sf::Event::KeyPressed) {
-            if (event.key.code == sf::Keyboard::Up && direction.y != 1)
-                direction = sf::Vector2i(0, -1);
-            else if (event.key.code == sf::Keyboard::Down && direction.y != -1)
-                direction = sf::Vector2i(0, 1);
-            else if (event.key.code == sf::Keyboard::Left && direction.x != 1)
-                direction = sf::Vector2i(-1, 0);
-            else if (event.key.code == sf::Keyboard::Right && direction.x != -1)
-                direction = sf::Vector2i(1, 0);
+    sf::Event e;
+    while(window.pollEvent(e)) {
+        if(e.type==sf::Event::Closed) window.close();
+        if(e.type==sf::Event::KeyPressed) {
+            if(e.key.code==sf::Keyboard::Up && direction.y!=1) direction={0,-1};
+            if(e.key.code==sf::Keyboard::Down && direction.y!=-1) direction={0,1};
+            if(e.key.code==sf::Keyboard::Left && direction.x!=1) direction={-1,0};
+            if(e.key.code==sf::Keyboard::Right && direction.x!=-1) direction={1,0};
         }
     }
 }
 
 void Logic(sf::RenderWindow &window) {
+    if(gameClock.getElapsedTime().asSeconds()<moveDelay) return;
+    gameClock.restart();
+
     x += direction.x;
     y += direction.y;
-    // Check for snake out of bounds
-    if (x < 0 || x >= width || y < 0 || y >= height) {
-        window.close();
-        return;
-    }
-    snake.insert(snake.begin(), sf::Vector2i(x, y));
-    if (x == fruitX && y == fruitY) {
+    sf::Vector2i newHead(x,y);
+    if(x<0 || x>=width || y<0 || y>=height) { window.close(); return; }
+    for(auto &b : snake) if(b==newHead) { window.close(); return; }
+
+    snake.insert(snake.begin(), newHead);
+
+    if(newHead==fruit) {
         score++;
-        fruitX = rand() % width;
-        fruitY = rand() % height;
+        fruitsEaten++;
+        fruit = {rand()%width, rand()%height};
+        if(fruitsEaten%3==0 && moveDelay>minDelay) moveDelay -= 0.005f;
     } else {
         snake.pop_back();
     }
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(width * blockSize, height * blockSize), "Snake Game");
-
+    sf::RenderWindow window(sf::VideoMode(width*blockSize, height*blockSize), "Snake Game");
     Setup(window);
 
-    while (window.isOpen()) {
+    while(window.isOpen()) {
         Input(window);
         Logic(window);
         Draw(window);
     }
-
-    return 0;
 }
