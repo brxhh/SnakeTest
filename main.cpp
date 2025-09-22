@@ -77,6 +77,7 @@ void Logic(sf::RenderWindow &window) {
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(width*blockSize, height*blockSize), "Snake Game");
+    window.setFramerateLimit(10);
     Setup(window);
 
     while(window.isOpen()) {
